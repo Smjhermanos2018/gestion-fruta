@@ -40,6 +40,7 @@
   // Estado local sincronizado con Firebase
   let lotes = {}, reservas = {}, ventas = {}, historial = {};
   let tabActual = "stock";
+  let filtroPlanta = "Todas";
 
   // Escuchar cambios en tiempo real
   onValue(ref(db, "lotes"), s => { lotes = s.val() || {}; render(); });
@@ -54,11 +55,13 @@
     const especie = document.getElementById("lEspecie").value;
     const calibre = document.getElementById("lCalibre").value;
     const fecha = document.getElementById("lFecha").value;
-    const bins = fmt(document.getElementById("lBins").value);
-    if (!bins || !fecha) return alert("Ingresa bins y fecha");
-    await push(ref(db, "lotes"), { planta, especie, calibre, fecha, bins });
-    await push(ref(db, "historial"), { tipo: "ingreso", texto: `Ingreso: ${planta} · ${especie} ${calibre} · ${bins} bins · ${fecha}`, ts: Date.now() });
+    const kilos = fmt(document.getElementById("lBins").value);
+    if (!kilos || !fecha) return alert("Ingresa kilos y fecha");
+    const bins = Math.round(kilos / 450 * 10) / 10;
+    await push(ref(db, "lotes"), { planta, especie, calibre, fecha, bins, kilos });
+    await push(ref(db, "historial"), { tipo: "ingreso", texto: `Ingreso: ${planta} · ${especie} ${calibre} · ${kilos} kg = ${bins} bins · ${fecha}`, ts: Date.now() });
     document.getElementById("lBins").value = "";
+    document.getElementById("lBinsPreview").textContent = "";
   };
 
   window.addReserva = async () => {
@@ -191,6 +194,7 @@
   };
 
   window.setTab = (t) => { tabActual = t; render(); };
+  window.setFiltro = (p) => { filtroPlanta = p; render(); };
 
   // ── RENDER ──
   function render() {
@@ -205,8 +209,9 @@
     const disponible = totalStock - totalReservado - totalVendido;
 
     // Resumen por especie+calibre
+    const lotesFiltrados = filtroPlanta === 'Todas' ? lotesArr : lotesArr.filter(l => l.planta === filtroPlanta);
     const stockMap = {};
-    lotesArr.forEach(l => {
+    lotesFiltrados.forEach(l => {
       const k = `${l.especie}|${l.calibre}`;
       stockMap[k] = (stockMap[k] || 0) + l.bins;
     });
@@ -254,7 +259,7 @@
           let consumido = reservasArr.filter(r=>r.especie===esp&&r.calibre===cal).reduce((a,r)=>a+r.bins,0)
                         + ventasArr.filter(v=>v.especie===esp&&v.calibre===cal).reduce((a,v)=>a+v.bins,0);
           const resv = reservasArr.filter(r=>r.especie===esp&&r.calibre===cal).reduce((a,r)=>a+r.bins,0);
-          const lotesMatch = lotesArr.filter(l=>l.especie===esp&&l.calibre===cal).sort((a,b)=>a.fecha.localeCompare(b.fecha));
+          const lotesMatch = lotesFiltrados.filter(l=>l.especie===esp&&l.calibre===cal).sort((a,b)=>a.fecha.localeCompare(b.fecha));
           let restante = consumido;
           const lotesDisp = lotesMatch.map(l => {
             const c = Math.min(restante, l.bins); restante -= c;
@@ -300,7 +305,8 @@
         <select id="lEspecie" style="${sel}">${optE}</select>
         <select id="lCalibre" style="${sel}">${optC}</select>
         <input type="date" id="lFecha" value="${today()}" style="${sel}">
-        <input type="number" id="lBins" placeholder="Cantidad bins" style="${inp};margin-top:8px;">
+        <input type="number" id="lBins" placeholder="Kilos (ej: 4500)" oninput="var b=this.value?Math.round(this.value/450*10)/10:0;document.getElementById('lBinsPreview').textContent=this.value?'= '+b+' bins':'';" style="${inp};margin-top:8px;">
+        <div id="lBinsPreview" style="color:#c8a84b;font-size:13px;text-align:right;margin-top:4px;"></div>
         <button onclick="addLote()" style="${btn}">+ Ingresar Lote</button>
         ${Object.keys(stockMap).length > 0 ? `
           <div style="font-size:11px;color:#c8a84b;letter-spacing:2px;margin:18px 0 10px;">STOCK ACTUAL</div>
