@@ -309,7 +309,10 @@
         <div id="lBinsPreview" style="color:#c8a84b;font-size:13px;text-align:right;margin-top:4px;"></div>
         <button onclick="addLote()" style="${btn}">+ Ingresar Lote</button>
         ${Object.keys(stockMap).length > 0 ? `
-          <div style="font-size:11px;color:#c8a84b;letter-spacing:2px;margin:18px 0 10px;">STOCK ACTUAL</div>
+          <div style="font-size:11px;color:#c8a84b;letter-spacing:2px;margin:18px 0 6px;">STOCK ACTUAL</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+            ${["Todas",...PLANTAS].map(p=>`<button onclick="setFiltro('${p}')" style="padding:5px 12px;border-radius:16px;border:none;cursor:pointer;font-size:12px;white-space:nowrap;background:${filtroPlanta===p?'#c8a84b':'#1a1f2e'};color:${filtroPlanta===p?'#0f1117':'#aaa'};">${p}</button>`).join("")}
+          </div>
           ${stockCards}` : ""}
         <button onclick="cerrarDia()" style="margin-top:16px;width:100%;padding:11px;background:#2a1f1f;border:1px solid #ef5350;border-radius:10px;color:#ef5350;font-size:13px;cursor:pointer;">🔄 Cerrar día</button>
       `;
