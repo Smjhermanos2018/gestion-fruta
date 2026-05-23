@@ -66,20 +66,21 @@
 
   window.addReserva = async () => {
     const cliente = document.getElementById("rCliente").value.trim();
+    const planta = document.getElementById("rPlanta").value;
     const especie = document.getElementById("rEspecie").value;
     const calibre = document.getElementById("rCalibre").value;
     const bins = fmt(document.getElementById("rBins").value);
     const fechaEntrega = document.getElementById("rFecha").value;
     if (!cliente || !bins) return alert("Ingresa cliente y bins");
-    // Validar stock disponible
-    const stockR = Object.values(lotes).filter(l => l.especie===especie && l.calibre===calibre).reduce((a,l)=>a+l.bins,0);
-    const reservadoR = Object.values(reservas).filter(r => r.especie===especie && r.calibre===calibre).reduce((a,r)=>a+r.bins,0);
-    const vendidoR = Object.values(ventas).filter(v => v.especie===especie && v.calibre===calibre).reduce((a,v)=>a+v.bins,0);
+    // Validar stock disponible en esa planta (lotes sin planta cuentan para cualquier planta)
+    const stockR = Object.values(lotes).filter(l => (!l.planta || l.planta===planta) && l.especie===especie && l.calibre===calibre).reduce((a,l)=>a+l.bins,0);
+    const reservadoR = Object.values(reservas).filter(r => (!r.planta || r.planta===planta) && r.especie===especie && r.calibre===calibre).reduce((a,r)=>a+r.bins,0);
+    const vendidoR = Object.values(ventas).filter(v => (!v.planta || v.planta===planta) && v.especie===especie && v.calibre===calibre).reduce((a,v)=>a+v.bins,0);
     const disponibleR = stockR - reservadoR - vendidoR;
-    if (stockR === 0) return alert(`⚠️ No tienes ${especie} ${calibre} en stock.`);
-    if (bins > disponibleR) return alert(`⚠️ Solo tienes ${disponibleR} bins disponibles de ${especie} ${calibre}.`);
-    await push(ref(db, "reservas"), { cliente, especie, calibre, bins, fechaEntrega });
-    await push(ref(db, "historial"), { tipo: "reserva", texto: `Reserva: ${cliente} · ${especie} ${calibre} · ${bins} bins · entrega ${fechaEntrega}`, ts: Date.now() });
+    if (stockR === 0) return alert(`⚠️ No tienes ${especie} ${calibre} en ${planta}.`);
+    if (bins > disponibleR) return alert(`⚠️ Solo tienes ${disponibleR} bins disponibles de ${especie} ${calibre} en ${planta}.`);
+    await push(ref(db, "reservas"), { cliente, planta, especie, calibre, bins, fechaEntrega });
+    await push(ref(db, "historial"), { tipo: "reserva", texto: `Reserva: ${cliente} · ${planta} · ${especie} ${calibre} · ${bins} bins · entrega ${fechaEntrega}`, ts: Date.now() });
     document.getElementById("rCliente").value = "";
     document.getElementById("rBins").value = "";
   };
@@ -313,7 +314,9 @@
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
             ${["Todas",...PLANTAS].map(p=>`<button onclick="setFiltro('${p}')" style="padding:5px 12px;border-radius:16px;border:none;cursor:pointer;font-size:12px;white-space:nowrap;background:${filtroPlanta===p?'#c8a84b':'#1a1f2e'};color:${filtroPlanta===p?'#0f1117':'#aaa'};">${p}</button>`).join("")}
           </div>
-          ${stockCards}` : ""}
+          ${Object.keys(stockMap).length === 0 ? 
+            `<div style="color:#555;font-size:14px;padding:10px 0;">Sin stock para esta planta</div>` : 
+            stockCards}` : ""}
         <button onclick="cerrarDia()" style="margin-top:16px;width:100%;padding:11px;background:#2a1f1f;border:1px solid #ef5350;border-radius:10px;color:#ef5350;font-size:13px;cursor:pointer;">🔄 Cerrar día</button>
       `;
     }
@@ -335,6 +338,7 @@
       content = `
         <div style="font-size:11px;color:#c8a84b;letter-spacing:2px;margin-bottom:10px;">NUEVA RESERVA (CON PAGO)</div>
         <input id="rCliente" placeholder="Nombre cliente" style="${inp}">
+        <select id="rPlanta" style="${sel}">${optP}</select>
         <select id="rEspecie" style="${sel}">${optE}</select>
         <select id="rCalibre" style="${sel}">${optC}</select>
         <input type="number" id="rBins" placeholder="Cantidad bins" style="${inp};margin-top:8px;">
