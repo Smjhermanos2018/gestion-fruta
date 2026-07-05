@@ -229,7 +229,7 @@
 
     const sel = `width:100%;box-sizing:border-box;background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:11px 12px;color:#1a1a1a;font-size:14px;margin-top:8px;`;
     const inp = `width:100%;box-sizing:border-box;background:#ffffff;border:1px solid #e5e7eb;border-radius:8px;padding:11px 12px;color:#1a1a1a;font-size:14px;`;
-    const btn = `margin-top:12px;width:100%;padding:13px;background:#2d6a4f;border:none;border-radius:10px;color:#0f1117;font-weight:bold;font-size:15px;cursor:pointer;`;
+    const btn = `margin-top:12px;width:100%;padding:13px;background:#2d6a4f;border:none;border-radius:10px;color:#f8f9f4;font-weight:bold;font-size:15px;cursor:pointer;`;
 
     const optP = PLANTAS.map(p => `<option>${p}</option>`).join("");
     const optE = ESPECIES.map(p => `<option>${p}</option>`).join("");
@@ -243,7 +243,7 @@
       { id: "historial", label: "📋 Historial" },
     ];
     const tabsHTML = tabs.map(t => `
-      <button onclick="setTab('${t.id}')" style="padding:7px 13px;border-radius:20px;border:none;cursor:pointer;font-size:13px;white-space:nowrap;background:${tabActual===t.id?"#2d6a4f":"#1a1f2e"};color:${tabActual===t.id?"#0f1117":"#aaa"};font-weight:${tabActual===t.id?"bold":"normal"};">${t.label}</button>
+      <button onclick="setTab('${t.id}')" style="padding:7px 13px;border-radius:20px;border:none;cursor:pointer;font-size:13px;white-space:nowrap;background:${tabActual===t.id?"#2d6a4f":"#ffffff"};color:${tabActual===t.id?"#f8f9f4":"#aaa"};font-weight:${tabActual===t.id?"bold":"normal"};">${t.label}</button>
     `).join("");
 
     // Content por tab
@@ -276,7 +276,7 @@
             const label = dias > 7 ? ` · ${dias}d ⚠️ URGENTE` : dias >= 5 ? ` · ${dias}d Atención` : "";
             const bg = dias > 7 ? "background:#ef535018;border-radius:6px;padding:3px 6px;" : dias >= 5 ? "background:#f4a26111;border-radius:6px;padding:3px 6px;" : "";
             return `<div style="font-size:11px;color:${color};margin-top:3px;${bg};display:flex;justify-content:space-between;align-items:center;">
-              <span>${emoji} ${l.fecha} · ${l.planta} · <span style="color:#fff">${l.disponible} bins</span>${label}</span>
+              <span>${emoji} ${l.fecha} · ${l.planta} · <span style="color:#1a1a1a">${l.disponible} bins</span>${label}</span>
               <span>
                 <button onclick="editarLote('${l.id}')" style="background:none;border:none;color:#2d6a4f;font-size:13px;cursor:pointer;padding:0 4px;">✏️</button>
                 <button onclick="eliminarLote('${l.id}')" style="background:none;border:none;color:#ef5350;font-size:13px;cursor:pointer;padding:0 4px;">🗑</button>
@@ -317,7 +317,7 @@
         ${Object.keys(stockMap).length > 0 ? `
           <div style="font-size:11px;color:#2d6a4f;letter-spacing:2px;margin:18px 0 6px;">STOCK ACTUAL</div>
           <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
-            ${["Todas",...PLANTAS].map(p=>`<button onclick="setFiltro('${p}')" style="padding:5px 12px;border-radius:16px;border:none;cursor:pointer;font-size:12px;white-space:nowrap;background:${filtroPlanta===p?'#2d6a4f':'#1a1f2e'};color:${filtroPlanta===p?'#0f1117':'#aaa'};">${p}</button>`).join("")}
+            ${["Todas",...PLANTAS].map(p=>`<button onclick="setFiltro('${p}')" style="padding:5px 12px;border-radius:16px;border:none;cursor:pointer;font-size:12px;white-space:nowrap;background:${filtroPlanta===p?'#2d6a4f':'#ffffff'};color:${filtroPlanta===p?'#f8f9f4':'#aaa'};">${p}</button>`).join("")}
           </div>
           ${Object.keys(stockMap).length === 0 ? 
             `<div style="color:#9ca3af;font-size:14px;padding:10px 0;">Sin stock para esta planta</div>` : 
@@ -407,7 +407,7 @@
             { label:"Reservado", value:totalReservado, color:"#f4a261" },
             { label:"Disponible", value:disponible, color:disponible<0?"#ef5350":"#66bb6a" },
           ].map(c=>`
-            <div style="background:#ffffff;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid ${c.color}33;">
+            <div style="background:#ffffff;border-radius:10px;padding:10px 6px;text-align:center;border:1px solid ${c.color}44;box-shadow:0 2px 8px rgba(0,0,0,0.06);">
               <div style="font-size:22px;font-weight:bold;color:${c.color};">${c.value}</div>
               <div style="font-size:9px;color:#6b7280;letter-spacing:1px;">${c.label.toUpperCase()} BINS</div>
             </div>`).join("")}
@@ -443,7 +443,7 @@
       <input type="number" id="eBins" placeholder="Cantidad bins" style="width:100%;box-sizing:border-box;background:#f8f9f4;border:1px solid #e5e7eb;border-radius:8px;padding:11px 12px;color:#fff;font-size:14px;margin-bottom:12px;">
       <div style="display:flex;gap:8px;">
         <button onclick="cerrarModal()" style="flex:1;padding:12px;background:#2a2a2a;border:1px solid #555;border-radius:10px;color:#6b7280;font-size:14px;cursor:pointer;">Cancelar</button>
-        <button onclick="guardarEdicion()" style="flex:1;padding:12px;background:#2d6a4f;border:none;border-radius:10px;color:#0f1117;font-weight:bold;font-size:14px;cursor:pointer;">Guardar</button>
+        <button onclick="guardarEdicion()" style="flex:1;padding:12px;background:#2d6a4f;border:none;border-radius:10px;color:#f8f9f4;font-weight:bold;font-size:14px;cursor:pointer;">Guardar</button>
       </div>
     </div>
   </div>
