@@ -55,11 +55,13 @@
     const especie = document.getElementById("lEspecie").value;
     const calibre = document.getElementById("lCalibre").value;
     const fecha = document.getElementById("lFecha").value;
-    const kilos = fmt(document.getElementById("lBins").value);
-    if (!kilos || !fecha) return alert("Ingresa kilos y fecha");
-    const bins = Math.round(kilos / 450 * 10) / 10;
+    const valor = fmt(document.getElementById("lBins").value);
+    if (!valor || !fecha) return alert("Ingresa cantidad y fecha");
+    const modoKilos = window.modoKilos !== false;
+    const bins = modoKilos ? Math.round(valor / 450 * 10) / 10 : valor;
+    const kilos = modoKilos ? valor : Math.round(valor * 450);
     await push(ref(db, "lotes"), { planta, especie, calibre, fecha, bins, kilos });
-    await push(ref(db, "historial"), { tipo: "ingreso", texto: `Ingreso: ${planta} · ${especie} ${calibre} · ${kilos} kg = ${bins} bins · ${fecha}`, ts: Date.now() });
+    await push(ref(db, "historial"), { tipo: "ingreso", texto: `Ingreso: ${planta} · ${especie} ${calibre} · ${modoKilos ? kilos+' kg = ' : ''}${bins} bins · ${fecha}`, ts: Date.now() });
     document.getElementById("lBins").value = "";
     document.getElementById("lBinsPreview").textContent = "";
   };
@@ -306,7 +308,11 @@
         <select id="lEspecie" style="${sel}">${optE}</select>
         <select id="lCalibre" style="${sel}">${optC}</select>
         <input type="date" id="lFecha" value="${today()}" style="${sel}">
-        <input type="number" id="lBins" placeholder="Kilos (ej: 4500)" oninput="var b=this.value?Math.round(this.value/450*10)/10:0;document.getElementById('lBinsPreview').textContent=this.value?'= '+b+' bins':'';" style="${inp};margin-top:8px;">
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button id="btnKilos" onclick="window.modoKilos=true;this.style.background='#c8a84b';this.style.color='#0f1117';this.nextElementSibling.style.background='#1a1f2e';this.nextElementSibling.style.color='#aaa';document.getElementById('lBins').placeholder='Kilos (ej: 4500)';" style="flex:1;padding:9px;border-radius:8px;border:none;cursor:pointer;background:#c8a84b;color:#0f1117;font-size:13px;font-weight:bold;">📦 Kilos</button>
+          <button id="btnBins" onclick="window.modoKilos=false;this.style.background='#c8a84b';this.style.color='#0f1117';this.previousElementSibling.style.background='#1a1f2e';this.previousElementSibling.style.color='#aaa';document.getElementById('lBins').placeholder='Bins (ej: 10)';document.getElementById('lBinsPreview').textContent='';" style="flex:1;padding:9px;border-radius:8px;border:none;cursor:pointer;background:#1a1f2e;color:#aaa;font-size:13px;font-weight:bold;">🗂 Bins</button>
+        </div>
+        <input type="number" id="lBins" placeholder="Kilos (ej: 4500)" oninput="if(window.modoKilos!==false){var b=this.value?Math.round(this.value/450*10)/10:0;document.getElementById('lBinsPreview').textContent=this.value?'→ '+b+' bins':'';}else{document.getElementById('lBinsPreview').textContent='';}" style="${inp};margin-top:8px;">
         <div id="lBinsPreview" style="color:#c8a84b;font-size:13px;text-align:right;margin-top:4px;"></div>
         <button onclick="addLote()" style="${btn}">+ Ingresar Lote</button>
         ${Object.keys(stockMap).length > 0 ? `
